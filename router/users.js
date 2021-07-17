@@ -27,6 +27,7 @@ module.exports = router => {
 
   // 登录
   router.post("/login", (req, res) => {
+    console.log("object :>> ", req.body);
     res.clearCookie("userId");
     const { phone, password } = req.body;
     UserModel.findOne({ phone: decrypt(phone) }).then(data => {
@@ -51,7 +52,7 @@ module.exports = router => {
   });
 
   // 用户是否登录
-  router.post("/getLogin", (req, res) => {
+  router.get("/getLogin", (req, res) => {
     getLogin(req, res);
   });
 
@@ -62,9 +63,12 @@ module.exports = router => {
   });
 
   // 获取用户信息
-  router.post("/getUser", (req, res) => {
+  router.get("/getUser", (req, res) => {
     const phone = getLogin(req, res);
-    UserModel.findOne({ phone: decrypt(phone) }).then(data => {
+    UserModel.findOne(
+      { phone: decrypt(phone) },
+      { _id: false, password: false }
+    ).then(data => {
       if (data) {
         data.phone = phone;
         send(res, 200, "", data);
@@ -72,5 +76,36 @@ module.exports = router => {
         send(res, 204, "获取用户信息有误");
       }
     });
+  });
+
+  // 获取用户列表
+  router.get("/getUserList", (req, res) => {
+    getLogin(req, res);
+    const { page, pageSize } = req.query;
+    console.log("page, pageSize :>> ", page, pageSize);
+    UserModel.find({ phone: { $ne: "admin" } })
+      .countDocuments()
+      .then(total => {
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize * 1;
+        UserModel.find(
+          { phone: { $ne: "admin" } },
+          { _id: false, password: false },
+          { skip: skip, limit: limit }
+        ).then(data => {
+          if (data) {
+            data.forEach(item => {
+              item.phone = encrypt(item.phone);
+            });
+            const params = {
+              list: data,
+              total,
+            };
+            send(res, 200, "", params);
+          } else {
+            send(res, 204, "获取用户列表失败");
+          }
+        });
+      });
   });
 };
