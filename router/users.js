@@ -59,7 +59,7 @@ module.exports = router => {
   // 退出登录
   router.post("/logout", (req, res) => {
     res.clearCookie("userId");
-    getLogin(req, res, "用户退出成功");
+    send(res, 400, "用户退出成功");
   });
 
   // 获取用户信息

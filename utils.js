@@ -29,7 +29,7 @@ const send = (res, code = 200, msg = "", data = "") => {
 
 // 获取用户是否登录
 const getLogin = (req, res, msg = "") => {
-  const userId = req.signedCookies.userId;
+  let { userId } = req.signedCookies;
   if (!userId) {
     send(res, 400, msg);
   } else {
