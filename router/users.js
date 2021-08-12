@@ -2,11 +2,11 @@ const UserModel = require("../model/usermodel");
 const { send, getLogin } = require("../utils");
 const { encrypt, decrypt } = require("../crypto");
 
-module.exports = router => {
+module.exports = (router) => {
   // 注册
   router.post("/register", (req, res) => {
     const { phone, password } = req.body;
-    UserModel.findOne({ phone: decrypt(phone) }).then(data => {
+    UserModel.findOne({ phone: decrypt(phone) }).then((data) => {
       if (data) {
         send(res, 203, "该手机号已注册");
       } else {
@@ -30,7 +30,7 @@ module.exports = router => {
     console.log("object :>> ", req.body);
     res.clearCookie("userId");
     const { phone, password } = req.body;
-    UserModel.findOne({ phone: decrypt(phone) }).then(data => {
+    UserModel.findOne({ phone: decrypt(phone) }).then((data) => {
       if (data) {
         if (data.password === decrypt(password)) {
           // cookie
@@ -54,6 +54,7 @@ module.exports = router => {
   // 用户是否登录
   router.get("/getLogin", (req, res) => {
     getLogin(req, res);
+    send(res, 200, "", true);
   });
 
   // 退出登录
@@ -68,7 +69,7 @@ module.exports = router => {
     UserModel.findOne(
       { phone: decrypt(phone) },
       { _id: false, password: false }
-    ).then(data => {
+    ).then((data) => {
       if (data) {
         data.phone = phone;
         send(res, 200, "", data);
@@ -85,16 +86,16 @@ module.exports = router => {
     console.log("page, pageSize :>> ", page, pageSize);
     UserModel.find({ phone: { $ne: "admin" } })
       .countDocuments()
-      .then(total => {
+      .then((total) => {
         const skip = (page - 1) * pageSize;
         const limit = pageSize * 1;
         UserModel.find(
           { phone: { $ne: "admin" } },
           { _id: false, password: false },
           { skip: skip, limit: limit }
-        ).then(data => {
+        ).then((data) => {
           if (data) {
-            data.forEach(item => {
+            data.forEach((item) => {
               item.phone = encrypt(item.phone);
             });
             const params = {
